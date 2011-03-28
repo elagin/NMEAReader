@@ -9,10 +9,14 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#define DOUBLE double
+/*
 #define ULONG unsigned long 
 #define UINT unsigned int 
-#define DOUBLE double 
 
+#define CHAR char
+#define LPCTSTR lpctstr;
+*/
 struct GPSInfo  
 {
 public:

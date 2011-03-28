@@ -6,9 +6,14 @@
 #pragma once
 
 #include "targetver.h"
-
+#include <windows.h>
+#include <iostream>
 #include <stdio.h>
 #include <tchar.h>
+using namespace std;
+
+//#define UINT unsigned int
+//#define CHAR char
 
 
 
