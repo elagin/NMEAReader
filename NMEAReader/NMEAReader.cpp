@@ -2,15 +2,16 @@
 //
 
 #include "stdafx.h"
-#include "nmeaparser.h"
-#include "windows.h" 
+#include "NMEAParser.h"
+//#include "windows.h"
 #include <iostream>
 #include <fstream>
 
 
 
 //LPCTSTR = const char* or const wchar_t* depending on _UNICODE
-int _tmain(int argc, _TCHAR* argv[])
+int main(int argc, char *argv[])
+//int _tmain(int argc, _TCHAR* argv[])
 {
 	NMEAParser parse("Log 2011-03-26 181859.txt");
 /*
@@ -47,7 +48,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	char name[256];
 
 //	infile.open ("d:\\Projects\\GPS\\NMEAReader\\Debug\\test.txt", ifstream::in);
-	infile.open ("d:\\Projects\\GPS\\gps_log_clean.txt", ifstream::in);
+	infile.open ("gps_log_clean.txt", ifstream::in);
 
 	while (infile.good())
 	{
@@ -58,7 +59,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 		if(parse.ParseNMEASentence( name, name, 1024 ))
 		{
-			cout << "res: " << buf2 << endl;
+			cout << "res: " << name << endl;
 			parse.PrintGpsInfo();
 		}
 	}

@@ -14,9 +14,9 @@
 class CFile
 {
 public:
-	void Open(LPCSTR outputFileName);
+	void Open(string outputFileName);
 	void Close();
-	void Write(const CHAR *buf, const UINT bufSize);
+	void Write(const char *buf, const UINT bufSize);
 
 	FILE * pFile;
 	long lSize;
@@ -28,28 +28,28 @@ class NMEAParser
 {
 public:
 	NMEAParser();
-	NMEAParser(LPCSTR outputFileName);
+	NMEAParser(string outputFileName);
 	virtual ~NMEAParser();
-	void Parse(const CHAR *buf, const UINT bufSize);
+	void Parse(const char *buf, const UINT bufSize);
 	GPSInfo& GetActualGPSInfo();
-//	void ParseNMEASentence(const CHAR *addressField, const CHAR *buf, const UINT bufSize);
-	bool ParseNMEASentence(const string addressField, const CHAR *buf, const UINT bufSize);
+//	void ParseNMEASentence(const char *addressField, const char *buf, const UINT bufSize);
+	bool ParseNMEASentence(const string addressField, const char *buf, const UINT bufSize);
 	void PrintGpsInfo();
 
 private:
 	CFile m_outputFile;
 
-	void ParseRecursive(const CHAR ch);
+	void ParseRecursive(const char ch);
 
-	bool ProcessGPGGA(const CHAR *buf, const UINT bufSize);
-	bool ProcessGPGSA(const CHAR *buf, const UINT bufSize);
-	void ProcessGPGSV(const CHAR *buf, const UINT bufSize);
-	void ProcessGPRMB(const CHAR *buf, const UINT bufSize);
-	bool ProcessGPRMC(const CHAR *buf, const UINT bufSize);
-	void ProcessGPZDA(const CHAR *buf, const UINT bufSize);
+	bool ProcessGPGGA(const char *buf, const UINT bufSize);
+	bool ProcessGPGSA(const char *buf, const UINT bufSize);
+	void ProcessGPGSV(const char *buf, const UINT bufSize);
+	void ProcessGPRMB(const char *buf, const UINT bufSize);
+	bool ProcessGPRMC(const char *buf, const UINT bufSize);
+	void ProcessGPZDA(const char *buf, const UINT bufSize);
 
 
-	BOOL m_logging;
+	bool m_logging;
 	GPSInfo m_GPSInfo;
 };
 

@@ -16,15 +16,15 @@ static char THIS_FILE[]=__FILE__;
 //////////////////////////////////////////////////////////////////////
 
 
-	void CFile::Open(LPCSTR outputFileName)
+	void CFile::Open(string outputFileName)
 	{
-		pFile = fopen( outputFileName, "w" );
+		pFile = fopen( outputFileName.c_str(), "w" );
 	}
 	void CFile::Close()
 	{
 		fclose(pFile);
 	}
-	void CFile::Write(const CHAR *buf, const UINT bufSize)
+	void CFile::Write(const char *buf, const UINT bufSize)
 	{
 		fwrite (buf , 1 , bufSize , pFile );
 	}
@@ -33,12 +33,12 @@ static char THIS_FILE[]=__FILE__;
 
 NMEAParser::NMEAParser()
 {
-  m_logging = FALSE;
+  m_logging = false;
 }
 
-NMEAParser::NMEAParser(LPCSTR outputFileName)
+NMEAParser::NMEAParser(string outputFileName)
 {
-  m_logging = TRUE;
+  m_logging = true;
   m_outputFile.Open(outputFileName/*, CFile::modeCreate | CFile::modeWrite */);
 }
 
@@ -48,7 +48,7 @@ NMEAParser::~NMEAParser()
 		m_outputFile.Close();
 }
 
-int axtoi( const CHAR *hexStg )
+int axtoi( const char *hexStg )
 {
   int n = 0;         // position in string
   int m = 0;         // position in digit[] to shift
@@ -80,7 +80,7 @@ int axtoi( const CHAR *hexStg )
   return (intValue);
 }
 
-void NMEAParser::Parse(const CHAR *buf, const UINT bufSize)
+void NMEAParser::Parse(const char *buf, const UINT bufSize)
 {
 	m_outputFile.Write(buf, bufSize);
 	for( UINT i = 0; i < bufSize; i++ )
@@ -89,7 +89,7 @@ void NMEAParser::Parse(const CHAR *buf, const UINT bufSize)
 	}
 }
 
-void NMEAParser::ParseRecursive(const CHAR ch)
+void NMEAParser::ParseRecursive(const char ch)
 {	
   enum NMEAParserState { SearchForSOS = 1,
                          RetrieveAddressField,
@@ -104,10 +104,10 @@ void NMEAParser::ParseRecursive(const CHAR ch)
 
   static NMEAParserState m_State = SearchForSOS;
   static UINT m_CalcChecksum;
-  static CHAR m_Checksum[3];
-  static CHAR m_NMEASequence[NMEA_SEQUENCE_MAX_LENGTH];
+  static char m_Checksum[3];
+  static char m_NMEASequence[NMEA_SEQUENCE_MAX_LENGTH];
   static UINT m_NMEASequenceIndex;
-  static CHAR m_AddressField[ADDRESS_FIELD_MAX_LENGTH];
+  static char m_AddressField[ADDRESS_FIELD_MAX_LENGTH];
   static UINT m_AddressFieldIndex;
 
   switch( m_State )
@@ -221,16 +221,17 @@ void NMEAParser::ParseRecursive(const CHAR ch)
 
 }
 
-//void NMEAParser::ParseNMEASentence(const CHAR *addressField, const CHAR *buf, const UINT bufSize)
-bool NMEAParser::ParseNMEASentence(const string addressField, const CHAR *buf, const UINT bufSize)
+//void NMEAParser::ParseNMEASentence(const char *addressField, const char *buf, const UINT bufSize)
+bool NMEAParser::ParseNMEASentence(const string addressField, const char *buf, const UINT bufSize)
 {
+    bool res = false;
 	if(addressField.find( "GPGGA" ) != -1 )
 	{
-		return ProcessGPGGA(++buf, bufSize);
+//		res = ProcessGPGGA(++buf, bufSize);
 	}
 	else if(addressField.find( "GPGSA" ) != -1 )
 	{
-		return ProcessGPGSA(buf, bufSize);
+//		res = ProcessGPGSA(++buf, bufSize);
 	}
 /*	else if( strcmp(addressField, "$GPGSV") == NULL )
 	{
@@ -240,14 +241,17 @@ bool NMEAParser::ParseNMEASentence(const string addressField, const CHAR *buf, c
 	{
 		ProcessGPRMB(buf, bufSize);
 	}
-	else if( strcmp(addressField, "$GPRMC") == NULL )
+ */
+        else if(addressField.find( "GPRMC" ) != -1 )
 	{
-		ProcessGPRMC(buf, bufSize);
+		res = ProcessGPRMC(++buf, bufSize);
 	}
+/*
 	else if( strcmp(addressField, "$GPZDA") == NULL )
 	{
 		ProcessGPZDA(buf, bufSize);
 	}*/
+    return res;
 }
 
 GPSInfo& NMEAParser::GetActualGPSInfo()
@@ -292,17 +296,17 @@ $GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M, ,*47
    GGA Global Positioning System Fix Data
 
 */
-bool NMEAParser::ProcessGPGGA(const CHAR *buf, const UINT bufSize)
+bool NMEAParser::ProcessGPGGA(const char *buf, const UINT bufSize)
 {
 	// To disable handling this sentence uncomment the next line
 	// return false;
 
 
-	CHAR auxBuf[10];
+	char auxBuf[10];
 
 	string aux;
 
-	const CHAR *p1 = buf, *p2;
+	const char *p1 = buf, *p2;
 
 	// GGA
 	if((UINT)(p1 - buf) >= bufSize)
@@ -352,14 +356,14 @@ bool NMEAParser::ProcessGPGGA(const CHAR *buf, const UINT bufSize)
 	aux.assign( p1, p2 - p1);
 	auxBuf[p2 - p1] = '\0';
 	p1 = p2 + 1;
-	const CHAR *p3;
+	const char *p3;
 //	p3 = aux.find(".");
 	if((p2 = strchr(aux.c_str(), '.')) == NULL)
 //	if((p2 = strchr(auxBuf, '.')) == NULL)
 		return false;
 //	if(p2-auxBuf < 2)
 //		return false;
-	DOUBLE latitude = atof(p2 - 2) / 60.0;
+	double latitude = atof(p2 - 2) / 60.0;
 	auxBuf[p2 - 2 - auxBuf] = '\0';
 	latitude += atof(auxBuf);
 	if((p2 = strchr(p1, ',')) == NULL)
@@ -383,7 +387,7 @@ bool NMEAParser::ProcessGPGGA(const CHAR *buf, const UINT bufSize)
 	p1 = p2 + 1;
 	if((p2 = strchr(auxBuf, '.')) == NULL)
 		return false;
-	DOUBLE longitude = atof(p2 - 2) / 60.0;
+	double longitude = atof(p2 - 2) / 60.0;
 	auxBuf[p2 - 2 - auxBuf] = '\0';
 	longitude += atof(auxBuf);
 	if((p2 = strchr(p1, ',')) == NULL)
@@ -424,7 +428,7 @@ bool NMEAParser::ProcessGPGGA(const CHAR *buf, const UINT bufSize)
 	strncpy(auxBuf, p1, p2 - p1);
 	auxBuf[p2 - p1] = '\0';
 	p1 = p2 + 1;
-	DOUBLE hdop = atoi(auxBuf);
+	double hdop = atoi(auxBuf);
 	
 	// Altitude
 	if((UINT)(p1 - buf) >= bufSize)
@@ -434,7 +438,7 @@ bool NMEAParser::ProcessGPGGA(const CHAR *buf, const UINT bufSize)
 	strncpy(auxBuf, p1, p2 - p1);
 	auxBuf[p2 - p1] = '\0';
 	p1 = p2 + 1;
-	DOUBLE altitude = atoi(auxBuf);
+	double altitude = atoi(auxBuf);
 	if((p2 = strchr(p1, ',')) == NULL)
 		return false;
 	if(p2 - p1 != 1)
@@ -451,7 +455,7 @@ bool NMEAParser::ProcessGPGGA(const CHAR *buf, const UINT bufSize)
 	strncpy(auxBuf, p1, p2 - p1);
 	auxBuf[p2 - p1] = '\0';
 	p1 = p2 + 1;
-	DOUBLE heightGeoid = atoi(auxBuf);
+	double heightGeoid = atoi(auxBuf);
 	if((p2 = strchr(p1, ',')) == NULL)
 		return false;
 //	if(p2 - p1 != 1)
@@ -485,17 +489,17 @@ bool NMEAParser::ProcessGPGGA(const CHAR *buf, const UINT bufSize)
 	return true;
 }
 
-bool NMEAParser::ProcessGPGSA(const CHAR *buf, const UINT bufSize)
+bool NMEAParser::ProcessGPGSA(const char *buf, const UINT bufSize)
 {
 	return false;
 }
 
-void NMEAParser::ProcessGPGSV(const CHAR *buf, const UINT bufSize)
+void NMEAParser::ProcessGPGSV(const char *buf, const UINT bufSize)
 {
 
 }
 
-void NMEAParser::ProcessGPRMB(const CHAR *buf, const UINT bufSize)
+void NMEAParser::ProcessGPRMB(const char *buf, const UINT bufSize)
 {
 
 }
@@ -526,10 +530,11 @@ Format
 	 RMC Recommended Minimum sentence C
 
 */
-bool NMEAParser::ProcessGPRMC( const CHAR *buf, const UINT bufSize )
+bool NMEAParser::ProcessGPRMC( const char *buf, const UINT bufSize )
 {
-	CHAR auxBuf[10];
-	const CHAR *p1 = buf, *p2;
+    cout << "ProcessGPRMC" << endl;
+	char auxBuf[10];
+	const char *p1 = buf, *p2;
 
 	// GGA
 	if((UINT)(p1 - buf) >= bufSize)
@@ -585,7 +590,7 @@ bool NMEAParser::ProcessGPRMC( const CHAR *buf, const UINT bufSize )
 		return false;
 	if(p2-auxBuf < 2)
 		return false;
-	DOUBLE latitude = atof(p2 - 2) / 60.0;
+	double latitude = atof(p2 - 2) / 60.0;
 	auxBuf[p2 - 2 - auxBuf] = '\0';
 	latitude += atof(auxBuf);
 	if((p2 = strchr(p1, ',')) == NULL)
@@ -608,7 +613,7 @@ bool NMEAParser::ProcessGPRMC( const CHAR *buf, const UINT bufSize )
 	p1 = p2 + 1;
 	if((p2 = strchr(auxBuf, '.')) == NULL)
 		return false;
-	DOUBLE longitude = atof(p2 - 2) / 60.0;
+	double longitude = atof(p2 - 2) / 60.0;
 	auxBuf[p2 - 2 - auxBuf] = '\0';
 	longitude += atof(auxBuf);
 	if((p2 = strchr(p1, ',')) == NULL)
@@ -629,7 +634,7 @@ bool NMEAParser::ProcessGPRMC( const CHAR *buf, const UINT bufSize )
 	strncpy(auxBuf, p1, p2 - p1);
 	auxBuf[p2 - p1] = '\0';
 	p1 = p2 + 1;
-	DOUBLE groundSpeed = atof(auxBuf);
+	double groundSpeed = atof(auxBuf);
 
 	// Course over ground (degrees) 
 	if((UINT)(p1 - buf) >= bufSize)
@@ -639,7 +644,7 @@ bool NMEAParser::ProcessGPRMC( const CHAR *buf, const UINT bufSize )
 	strncpy(auxBuf, p1, p2 - p1);
 	auxBuf[p2 - p1] = '\0';
 	p1 = p2 + 1;
-	DOUBLE courseOverGround = atof(auxBuf);
+	double courseOverGround = atof(auxBuf);
 
 	// Date
 	if((UINT)(p1 - buf) >= bufSize)
@@ -668,7 +673,7 @@ bool NMEAParser::ProcessGPRMC( const CHAR *buf, const UINT bufSize )
 	strncpy(auxBuf, p1, p2 - p1);
 	auxBuf[p2 - p1] = '\0';
 	p1 = p2 + 1;
-	DOUBLE magneticVariation = atof(auxBuf);
+	double magneticVariation = atof(auxBuf);
 	if((p2 = strchr(p1, '*')) == NULL)
 		return false;
 	if(p2 - p1 > 1)
@@ -682,14 +687,20 @@ bool NMEAParser::ProcessGPRMC( const CHAR *buf, const UINT bufSize )
 	m_GPSInfo.m_latitude = latitude;
 	m_GPSInfo.m_longitude = longitude;
 	m_GPSInfo.m_nSentences++;
+        m_GPSInfo.groundSpeed = groundSpeed;
+        return true;
 }
 
-void NMEAParser::ProcessGPZDA(const CHAR *buf, const UINT bufSize)
+void NMEAParser::ProcessGPZDA(const char *buf, const UINT bufSize)
 {
 
 }
 
 void NMEAParser::PrintGpsInfo()
 {
-	cout << "Lat: " << m_GPSInfo.m_latitude << "Lon: " << m_GPSInfo.m_longitude << endl;
-}
+	cout << "Lat: " << m_GPSInfo.m_latitude
+                << "\tLon: " << m_GPSInfo.m_longitude
+                << "\tSatelites In Use: " << m_GPSInfo.m_satelitesInUse
+                << "\tGroundSpeed: " << m_GPSInfo.groundSpeed
+                << endl;
+        }

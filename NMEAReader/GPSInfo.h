@@ -9,23 +9,16 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#define DOUBLE double
-/*
-#define ULONG unsigned long 
-#define UINT unsigned int 
-
-#define CHAR char
-#define LPCTSTR lpctstr;
-*/
 struct GPSInfo  
 {
 public:
-	DOUBLE m_latitude;
-	DOUBLE m_longitude;
-    DOUBLE m_altitude;
+	double m_latitude;
+	double m_longitude;
+        double m_altitude;
 	ULONG m_nSentences;
 	UINT m_signalQuality;
 	UINT m_satelitesInUse;
+        double groundSpeed;
 
 	GPSInfo();
 	virtual ~GPSInfo();

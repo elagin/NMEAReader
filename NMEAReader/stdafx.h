@@ -6,14 +6,25 @@
 #pragma once
 
 #include "targetver.h"
-#include <windows.h>
+//#include <windows.h>
+#include <stdio.h>
+#include <linux/types.h>
 #include <iostream>
 #include <stdio.h>
-#include <tchar.h>
+
+// for linux
+#include <string.h>
+#include <stdlib.h>
+
+//#include <tchar.h>
 using namespace std;
 
 //#define UINT unsigned int
 //#define CHAR char
+
+//typedef double DOUBLE;
+typedef unsigned long   ULONG;
+typedef unsigned int    UINT;
 
 
 
