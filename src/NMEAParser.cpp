@@ -11,41 +11,29 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
+using boost::lexical_cast;
+using boost::bad_lexical_cast;
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
 
-	void CFile::Open(string outputFileName)
-	{
-		pFile = fopen( outputFileName.c_str(), "w" );
-	}
-	void CFile::Close()
-	{
-		fclose(pFile);
-	}
-	void CFile::Write(const char *buf, const UINT bufSize)
-	{
-		fwrite (buf , 1 , bufSize , pFile );
-	}
-
-
-
 NMEAParser::NMEAParser()
 {
-  m_logging = false;
+//  m_logging = false;
 }
 
 NMEAParser::NMEAParser(string outputFileName)
 {
-  m_logging = true;
-  m_outputFile.Open(outputFileName/*, CFile::modeCreate | CFile::modeWrite */);
+//  m_logging = true;
+//  m_outputFile.Open(outputFileName/*, CFile::modeCreate | CFile::modeWrite */);
 }
 
 NMEAParser::~NMEAParser()
 {
-	if(m_logging)
-		m_outputFile.Close();
+//	if(m_logging)
+//		m_outputFile.Close();
 }
 
 int axtoi( const char *hexStg )
@@ -82,11 +70,11 @@ int axtoi( const char *hexStg )
 
 void NMEAParser::Parse(const char *buf, const UINT bufSize)
 {
-	m_outputFile.Write(buf, bufSize);
+/*	m_outputFile.Write(buf, bufSize);
 	for( UINT i = 0; i < bufSize; i++ )
 	{
 		ParseRecursive(buf[i]);
-	}
+	}*/
 }
 
 void NMEAParser::ParseRecursive(const char ch)
@@ -227,13 +215,13 @@ bool NMEAParser::ParseNMEASentence(const string addressField, const char *buf, c
     bool res = false;
 	if(addressField.find( "GPGGA" ) != -1 )
 	{
-//		res = ProcessGPGGA(++buf, bufSize);
+		res = ProcessGPGGA(++buf, bufSize);
 	}
-	else if(addressField.find( "GPGSA" ) != -1 )
+/*	else if(addressField.find( "GPGSA" ) != -1 )
 	{
-//		res = ProcessGPGSA(++buf, bufSize);
+		res = ProcessGPGSA(++buf, bufSize);
 	}
-/*	else if( strcmp(addressField, "$GPGSV") == NULL )
+	else if( strcmp(addressField, "$GPGSV") == NULL )
 	{
 		ProcessGPGSV(buf, bufSize);
 	}
@@ -301,144 +289,77 @@ bool NMEAParser::ProcessGPGGA(const char *buf, const UINT bufSize)
 	// To disable handling this sentence uncomment the next line
 	// return false;
 
-
-	char auxBuf[10];
-
+	//	char auxBuf[10];
 	string aux;
-
-	const char *p1 = buf, *p2;
+	const char *p1 = buf;
+	const char *p2 = NULL;
 
 	// GGA
 	if((UINT)(p1 - buf) >= bufSize)
 		return false;
 	if(bufSize < 6)
 		return false;
-//	strncpy(auxBuf, buf, 5);
+	//	strncpy(auxBuf, buf, 5);
 	aux.assign(buf, 5);
-//	auxBuf[5] = '\0';
-//	if(strcmp(auxBuf, "GPGGA") != 0 || buf[5] != ',')
-//		return false;
 	if(aux.compare("GPGGA"))
 	{
 		return false;
 	}
 	p1 += 6;
+	int size = 0;
+	getTime(p1, buf, bufSize, m_GPSInfo.time, size);
+	p1 += size;
 
-	// Time
-	if((UINT)(p1 - buf) >= bufSize)
-		return false;
-	if((p2 = strchr(p1, ',')) == NULL)
-		return false;
-	UINT hour, min, sec;
-//	strncpy(auxBuf, p1, 2);
-	aux.assign(p1, 2);
-//	auxBuf[2] = '\0';
-//	hour = atoi(auxBuf);
-	hour = atoi(aux.c_str());
-	p1 += 2;
-//	strncpy(auxBuf, p1, 2);
-	aux.assign(p1, 2);
-//	auxBuf[2] = '\0';
-	min = atoi(aux.c_str());
-	p1 += 2;
-//	strncpy(auxBuf, p1, 2);
-	aux.assign(p1, 2);
-//	auxBuf[2] = '\0';
-	sec = atoi(aux.c_str());
-	p1 = p2 + 1;
+	// Latitude
+	int sizeLat = 0;
+	double latitude = 0;
+	getLat(p1, buf, bufSize, latitude, sizeLat, true);
+	m_GPSInfo.setLatitude(latitude);
 
-    // Latitude
-	if((UINT)(p1 - buf) >= bufSize)
-		return false;
-	if((p2 = strchr(p1, ',')) == NULL)
-		return false;
-	strncpy(auxBuf, p1, p2 - p1);
-	aux.assign( p1, p2 - p1);
-	auxBuf[p2 - p1] = '\0';
-	p1 = p2 + 1;
-	const char *p3;
-//	p3 = aux.find(".");
-	if((p2 = strchr(aux.c_str(), '.')) == NULL)
-//	if((p2 = strchr(auxBuf, '.')) == NULL)
-		return false;
-//	if(p2-auxBuf < 2)
-//		return false;
-	double latitude = atof(p2 - 2) / 60.0;
-	auxBuf[p2 - 2 - auxBuf] = '\0';
-	latitude += atof(auxBuf);
-	if((p2 = strchr(p1, ',')) == NULL)
-		return false;
-	if(p2 - p1 != 1)
-		return false;
-	if(*p1 == 'S')
-		latitude = -latitude;
-	else if(*p1 != 'N')
-		return false;
-	p1 = p2 + 1;
+	p1 += sizeLat;
 
-    // Longitude
-	if((UINT)(p1 - buf) >= bufSize)
-		return false;
-	if((p2 = strchr(p1, ',')) == NULL)
-		return false;
-	strncpy(auxBuf, p1, p2 - p1);
-	aux.assign(p1, p2-p1);
-	auxBuf[p2 - p1] = '\0';
-	p1 = p2 + 1;
-	if((p2 = strchr(auxBuf, '.')) == NULL)
-		return false;
-	double longitude = atof(p2 - 2) / 60.0;
-	auxBuf[p2 - 2 - auxBuf] = '\0';
-	longitude += atof(auxBuf);
-	if((p2 = strchr(p1, ',')) == NULL)
-		return false;
-	if(p2 - p1 != 1)
-		return false;
-	if(*p1 == 'W')
-		longitude = -longitude;
-	else if(*p1 != 'E')
-		return false;
-	p1 = p2 + 1;
+	sizeLat = 0;
+	double longitude = 0;
+	getLat(p1, buf, bufSize, longitude, sizeLat, false);
+	p1 += sizeLat;
+
+        m_GPSInfo.setLongitude(longitude);
 
 	// GPS quality
 	if((UINT)(p1 - buf) >= bufSize)
 		return false;
 	if((p2 = strchr(p1, ',')) == NULL)
 		return false;
-	strncpy(auxBuf, p1, p2 - p1);
-	auxBuf[p2 - p1] = '\0';
+        
+        string quality;
+        quality.assign(p1, p2 - p1);
+        m_GPSInfo.quality = lexical_cast<int>(quality);
+//      	m_GPSInfo.quality.assign(p1, p2 - p1);
 	p1 = p2 + 1;
-	UINT quality = atoi(auxBuf);
 
 	// Satellites in use
 	if((UINT)(p1 - buf) >= bufSize)
 		return false;
 	if((p2 = strchr(p1, ',')) == NULL)
 		return false;
-	strncpy(auxBuf, p1, p2 - p1);
-	auxBuf[p2 - p1] = '\0';
+	m_GPSInfo.satelitesInUse.assign(p1, p2 - p1);
 	p1 = p2 + 1;
-	UINT satelitesInUse = atoi(auxBuf);
-	
+
 	// HDOP
 	if((UINT)(p1 - buf) >= bufSize)
 		return false;
 	if((p2 = strchr(p1, ',')) == NULL)
 		return false;
-	strncpy(auxBuf, p1, p2 - p1);
-	auxBuf[p2 - p1] = '\0';
+	m_GPSInfo.hdop.assign(p1, p2 - p1);
 	p1 = p2 + 1;
-	double hdop = atoi(auxBuf);
-	
+
 	// Altitude
 	if((UINT)(p1 - buf) >= bufSize)
 		return false;
 	if((p2 = strchr(p1, ',')) == NULL)
 		return false;
-	strncpy(auxBuf, p1, p2 - p1);
-	auxBuf[p2 - p1] = '\0';
+	m_GPSInfo.altitude.assign(p1, p2 - p1);
 	p1 = p2 + 1;
-	double altitude = atoi(auxBuf);
 	if((p2 = strchr(p1, ',')) == NULL)
 		return false;
 	if(p2 - p1 != 1)
@@ -452,19 +373,18 @@ bool NMEAParser::ProcessGPGGA(const char *buf, const UINT bufSize)
 		return false;
 	if((p2 = strchr(p1, ',')) == NULL)
 		return false;
-	strncpy(auxBuf, p1, p2 - p1);
-	auxBuf[p2 - p1] = '\0';
+	m_GPSInfo.heightGeoid.assign(p1, p2 - p1);
 	p1 = p2 + 1;
-	double heightGeoid = atoi(auxBuf);
 	if((p2 = strchr(p1, ',')) == NULL)
 		return false;
-//	if(p2 - p1 != 1)
-//		return false;
-//	if(*p1 != 'M')
-//		return false;
+	//	if(p2 - p1 != 1)
+	//		return false;
+	//	if(*p1 != 'M')
+	//		return false;
 	p1 = p2 + 1;
 
 	// Empty field
+/*
 	if((UINT)(p1 - buf) >= bufSize)
 		return false;
 	if((p2 = strchr(p1, ',')) == NULL)
@@ -472,26 +392,20 @@ bool NMEAParser::ProcessGPGGA(const char *buf, const UINT bufSize)
 	p1 = p2 + 1;
 
 	// Last Empty field
+
 	if((UINT)(p1 - buf) >= bufSize)
 		return false;
 	if((p2 = strchr(p1, ',')) != NULL)
 		return false;
 	if((p2 = strchr(p1, '*')) == NULL)
 		return false;
-
-	// Set the values of m_GPSInfo
-	m_GPSInfo.m_latitude = latitude;
-	m_GPSInfo.m_longitude = longitude;
-	m_GPSInfo.m_altitude = altitude;
-	m_GPSInfo.m_nSentences++;
-	m_GPSInfo.m_signalQuality = quality;
-	m_GPSInfo.m_satelitesInUse = satelitesInUse;
+*/
 	return true;
 }
 
-bool NMEAParser::ProcessGPGSA(const char *buf, const UINT bufSize)
+void NMEAParser::ProcessGPGSA(const char *buf, const UINT bufSize)
 {
-	return false;
+
 }
 
 void NMEAParser::ProcessGPGSV(const char *buf, const UINT bufSize)
@@ -508,65 +422,51 @@ void NMEAParser::ProcessGPRMB(const char *buf, const UINT bufSize)
 Format
 
   $GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A
-	 |	 |		| |			 |			 |	   |	 |		|	   |
-	 |	 |		| |			 |			 |	   |	 |		|	   *6A Checksum data
-	 |	 |		| |			 |			 |	   |	 |		|
-	 |	 |		| |			 |			 |	   |	 |		003.1,W Magnetic Variation
-	 |	 |		| |			 |			 |	   |	 |
-	 |	 |		| |			 |			 |	   |	 230394 Date - 23rd of March 1994
-	 |	 |		| |			 |			 |	   |
-	 |	 |		| |			 |			 |	   084.4 Track angle in degrees
-	 |	 |		| |			 |			 |	   
-	 |	 |		| |			 |			 022.4 Speed over the ground in knots
-	 |	 |		| |			 |
-	 |	 |		| |			 01131.000,E Longitude 11 deg 31.000' E
-	 |	 |		| |
-	 |	 |		| 4807.038,N Latitude 48 deg 07.038' N
-	 |	 |		|
-	 |	 |		A Status A=active or V=Void
-	 |	 |
-	 |	 123519 Fix taken at 12:35:19 UTC
-	 |
-	 RMC Recommended Minimum sentence C
+     |	 |		| |			 |			 |	   |	 |		|	   |
+     |	 |		| |			 |			 |	   |	 |		|	   *6A Checksum data
+     |	 |		| |			 |			 |	   |	 |		|
+     |	 |		| |			 |			 |	   |	 |		003.1,W Magnetic Variation
+     |	 |		| |			 |			 |	   |	 |
+     |	 |		| |			 |			 |	   |	 230394 Date - 23rd of March 1994
+     |	 |		| |			 |			 |	   |
+     |	 |		| |			 |			 |	   084.4 Track angle in degrees
+     |	 |		| |			 |			 |
+     |	 |		| |			 |			 022.4 Speed over the ground in knots
+     |	 |		| |			 |
+     |	 |		| |			 01131.000,E Longitude 11 deg 31.000' E
+     |	 |		| |
+     |	 |		| 4807.038,N Latitude 48 deg 07.038' N
+     |	 |		|
+     |	 |		A Status A=active or V=Void
+     |	 |
+     |	 123519 Fix taken at 12:35:19 UTC
+     |
+     RMC Recommended Minimum sentence C
 
 */
 bool NMEAParser::ProcessGPRMC( const char *buf, const UINT bufSize )
 {
-    cout << "ProcessGPRMC" << endl;
-	char auxBuf[10];
-	const char *p1 = buf, *p2;
+//	cout << "ProcessGPRMC" << endl;
+//	char auxBuf[10];
+	const char *p1 = buf;
+	const char *p2 = NULL;
+	string aux;
 
 	// GGA
 	if((UINT)(p1 - buf) >= bufSize)
 		return false;
 	if(bufSize < 6)
 		return false;
-	strncpy(auxBuf, buf, 5);
-	auxBuf[5] = '\0';
-	if(strcmp(auxBuf, "GPRMC") != 0 || buf[5] != ',')
+	aux.assign(buf, 5);
+	if(aux.compare("GPRMC"))
 		return false;
 	p1 += 6;
 
 	// Time
-	if((UINT)(p1 - buf) >= bufSize)
-		return false;
-	if((p2 = strchr(p1, ',')) == NULL)
-		return false;
-	UINT hour, min, sec;
-	strncpy(auxBuf, p1, 2);
-	auxBuf[2] = '\0';
-	hour = atoi(auxBuf);
-	p1 += 2;
-	strncpy(auxBuf, p1, 2);
-	auxBuf[2] = '\0';
-	min = atoi(auxBuf);
-	p1 += 2;
-	strncpy(auxBuf, p1, 2);
-	auxBuf[2] = '\0';
-	sec = atoi(auxBuf);
-	p1 = p2 + 1;
+	int size = 0;
+	getTime(p1, buf, bufSize, m_GPSInfo.time, size );
+	p1 =  p1 + size;
 
-	
 	// Status 
 	if((UINT)(p1 - buf) >= bufSize)
 		return false;
@@ -579,74 +479,41 @@ bool NMEAParser::ProcessGPRMC( const char *buf, const UINT bufSize )
 	p1 = p2 + 1;
 
     // Latitude
-	if((UINT)(p1 - buf) >= bufSize)
-		return false;
-	if((p2 = strchr(p1, ',')) == NULL)
-		return false;
-	strncpy(auxBuf, p1, p2 - p1);
-	auxBuf[p2 - p1] = '\0';
-	p1 = p2 + 1;
-	if((p2 = strchr(auxBuf, '.')) == NULL)
-		return false;
-	if(p2-auxBuf < 2)
-		return false;
-	double latitude = atof(p2 - 2) / 60.0;
-	auxBuf[p2 - 2 - auxBuf] = '\0';
-	latitude += atof(auxBuf);
-	if((p2 = strchr(p1, ',')) == NULL)
-		return false;
-	if(p2 - p1 != 1)
-		return false;
-	if(*p1 == 'S')
-		latitude = -latitude;
-	else if(*p1 != 'N')
-		return false;
-	p1 = p2 + 1;
+	int sizeLat = 0;
+	double latitude = 0;
+	getLat(p1, buf, bufSize, latitude, sizeLat, true);
+
+	p1 += sizeLat;
 
     // Longitude
-	if((UINT)(p1 - buf) >= bufSize)
-		return false;
-	if((p2 = strchr(p1, ',')) == NULL)
-		return false;
-	strncpy(auxBuf, p1, p2 - p1);
-	auxBuf[p2 - p1] = '\0';
-	p1 = p2 + 1;
-	if((p2 = strchr(auxBuf, '.')) == NULL)
-		return false;
-	double longitude = atof(p2 - 2) / 60.0;
-	auxBuf[p2 - 2 - auxBuf] = '\0';
-	longitude += atof(auxBuf);
-	if((p2 = strchr(p1, ',')) == NULL)
-		return false;
-	if(p2 - p1 != 1)
-		return false;
-	if(*p1 == 'W')
-		longitude = -longitude;
-	else if(*p1 != 'E')
-		return false;
-	p1 = p2 + 1;
+	double longitude = 0;
+	getLat(p1, buf, bufSize, longitude, sizeLat, false);
+	m_GPSInfo.setLongitude(longitude);
+	p1 =  p1 + sizeLat;
 
-	// Ground speed
 	if((UINT)(p1 - buf) >= bufSize)
 		return false;
 	if((p2 = strchr(p1, ',')) == NULL)
 		return false;
-	strncpy(auxBuf, p1, p2 - p1);
-	auxBuf[p2 - p1] = '\0';
+	m_GPSInfo.groundSpeed.assign(p1, p2 - p1);
+//	strncpy(auxBuf, p1, p2 - p1);
+//	auxBuf[p2 - p1] = '\0';
 	p1 = p2 + 1;
-	double groundSpeed = atof(auxBuf);
+//	 = atof(aux.c_str());
 
 	// Course over ground (degrees) 
 	if((UINT)(p1 - buf) >= bufSize)
 		return false;
 	if((p2 = strchr(p1, ',')) == NULL)
 		return false;
-	strncpy(auxBuf, p1, p2 - p1);
-	auxBuf[p2 - p1] = '\0';
+	m_GPSInfo.courseOverGround.assign(p1, p2 - p1);
+//	strncpy(auxBuf, p1, p2 - p1);
+//	auxBuf[p2 - p1] = '\0';
 	p1 = p2 + 1;
-	double courseOverGround = atof(auxBuf);
 
 	// Date
+	getTime(p1, buf, bufSize, m_GPSInfo.date, size);
+/*
 	if((UINT)(p1 - buf) >= bufSize)
 		return false;
 	if((p2 = strchr(p1, ',')) == NULL)
@@ -664,43 +531,156 @@ bool NMEAParser::ProcessGPRMC( const char *buf, const UINT bufSize )
 	auxBuf[2] = '\0';
 	year = 2000 + atoi(auxBuf);
 	p1 = p2 + 1;
-
+*/
+	p1 = p1 + size;
 	// Magnetic variation
 	if((UINT)(p1 - buf) >= bufSize)
 		return false;
 	if((p2 = strchr(p1, ',')) == NULL)
 		return false;
-	strncpy(auxBuf, p1, p2 - p1);
-	auxBuf[p2 - p1] = '\0';
+	m_GPSInfo.magneticVariation.assign(p1, p2 - p1);
+//	strncpy(auxBuf, p1, p2 - p1);
+//	auxBuf[p2 - p1] = '\0';
 	p1 = p2 + 1;
-	double magneticVariation = atof(auxBuf);
+//	double magneticVariation = atof(auxBuf);
 	if((p2 = strchr(p1, '*')) == NULL)
 		return false;
 	if(p2 - p1 > 1)
 		return false;
 	if(*p1 == 'W')
+	{
 		latitude = -latitude;
+		m_GPSInfo.setLatitude(latitude);
+	}
+//		lat = -lat;
 	else if(*p1 != 'E' && *p1 != '*')
 		return false;
-
-	// Set the values of m_GPSInfo
-	m_GPSInfo.m_latitude = latitude;
-	m_GPSInfo.m_longitude = longitude;
-	m_GPSInfo.m_nSentences++;
-        m_GPSInfo.groundSpeed = groundSpeed;
-        return true;
+	return true;
 }
 
-void NMEAParser::ProcessGPZDA(const char *buf, const UINT bufSize)
-{
+void NMEAParser::ProcessGPZDA(const char *buf, const UINT bufSize){}
 
+
+bool NMEAParser::getTime(const char *p1, const char *buf, const UINT bufSize, gpsTime & time, int & size)
+{
+    bool res = false;
+    string aux;
+	const char *p2 = NULL;
+	const char* pStart = p1;
+
+    if((UINT)(p1 - buf) >= bufSize)
+        res = false;
+    if((p2 = strchr(p1, ',')) == NULL)
+        res = false;
+
+    aux.assign(p1, 2);
+    time.setHour(aux);
+
+    p1 += 2;
+    aux.assign(p1, 2);
+    time.setMin(aux);
+
+    p1 += 2;
+    aux.assign(p1, 2);
+    time.setSec(aux);
+
+    if((p2 = strchr(p1, ',')) == NULL)
+        res = false;
+
+    size = p2-pStart+1;
+    res = true;
+
+    return res;
+}
+
+bool NMEAParser::getLat(const char *p1, const char *buf, const UINT bufSize, double & latNew, int & size, const bool isLat)
+{
+        bool res = false;
+        string aux;
+    
+	const char *p2 = NULL;
+	const char* pStart = p1;
+	if((UINT)(p1 - buf) >= bufSize)
+		return false;
+	if((p2 = strchr(p1, ',')) == NULL)
+		return false;
+	aux.assign(p1, p2 - p1);
+	p1 = p2 + 1;
+	int pos = aux.find('.');
+	if(pos == -1)
+		return false;
+	latNew = atof(aux.substr(pos - 2, aux.length() - 2).c_str()) / 60;
+	latNew += atof(aux.substr(pos - 4, 2).c_str());
+	if((p2 = strchr(p1, ',')) == NULL)
+		return false;
+	if(p2 - p1 != 1)
+		return false;
+	if(isLat)
+	{
+		if(*p1 == 'S')
+			latNew = -latNew;
+		else if(*p1 != 'N')
+			return false;
+		size = 12;
+	}
+	else
+	{
+		if(*p1 == 'W')
+			latNew = -latNew;
+		else if(*p1 != 'E')
+			return false;
+		size = 13;
+	}
+	return true;
+}
+
+void NMEAParser::PrintByPlt(ofstream & outfile)
+{
+//	outfile << "aa";
+}
+
+string NMEAParser::PrintByPlt()
+{
+	string out;
+
+        if(!m_GPSInfo.getLatitude().empty()
+            && !m_GPSInfo.getLongitude().empty())
+        {
+            out.append(m_GPSInfo.getLatitude() + ",");
+            out.append(m_GPSInfo.getLongitude() + ",");
+            out.append("0,");
+            out.append(m_GPSInfo.altitude + ",");
+            out.append(",");
+            out.append("28-may-10,");
+            out.append(m_GPSInfo.time.getTime());
+        }
+	return out;
 }
 
 void NMEAParser::PrintGpsInfo()
 {
-	cout << "Lat: " << m_GPSInfo.m_latitude
-                << "\tLon: " << m_GPSInfo.m_longitude
-                << "\tSatelites In Use: " << m_GPSInfo.m_satelitesInUse
-                << "\tGroundSpeed: " << m_GPSInfo.groundSpeed
-                << endl;
-        }
+    cout << "Lat: " << m_GPSInfo.getLatitude()
+            << "\tLon: " << m_GPSInfo.getLongitude()
+            << "\tSats In Use: " << m_GPSInfo.satelitesInUse
+            << "\tSpeed: " << m_GPSInfo.groundSpeed
+            << "\tTime: " << m_GPSInfo.time.getTime()
+            << "\tAltitude: " << m_GPSInfo.altitude
+            << endl;
+}
+
+string NMEAParser::PrintStatus()
+{
+    string out;
+
+    if(m_GPSInfo.quality != 0)
+    {
+ 	out = "Lat: " + m_GPSInfo.getLatitude()
+            + "Lon: " + m_GPSInfo.getLongitude()
+                ;
+    }
+    else
+    {
+        out = "No data";
+    }
+    return out;
+}

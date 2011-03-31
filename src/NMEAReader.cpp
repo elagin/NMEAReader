@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 #include "NMEAParser.h"
-//#include "windows.h"
+#include "CFile.h"
 #include <iostream>
 #include <fstream>
 
@@ -13,7 +13,8 @@
 int main(int argc, char *argv[])
 //int _tmain(int argc, _TCHAR* argv[])
 {
-	NMEAParser parse("Log 2011-03-26 181859.txt");
+    const char* inFileName;
+	NMEAParser parse;
 /*
 	FILE * pFile;
 	long lSize;
@@ -47,29 +48,62 @@ int main(int argc, char *argv[])
 
 	char name[256];
 
+            switch ( argc )
+    {
+        case 0:
+        case 1:
+            cout << "Usage: filename" << endl;
+            return 1;
+        break;
+        case 2:
+            inFileName = argv[1];
+        break;
+    }
+
 //	infile.open ("d:\\Projects\\GPS\\NMEAReader\\Debug\\test.txt", ifstream::in);
-	infile.open ("gps_log_clean.txt", ifstream::in);
+	infile.open (inFileName, ifstream::in);
+        if(!infile.good())
+        {
+            cout << "Error opening file: " << inFileName << endl;
+            return 3;
+        }
+
+	ofstream outfile ("new.plt",ofstream::out);
+        string outFile = "out2.plt";
+        CPLTFile plt(outFile);
+        plt.createHeader();
 
 	while (infile.good())
 	{
 		infile.getline( name, 256 );
 //		cout << ":" << name << endl;
-		char buf2[1024];
+//		char buf2[1024];
 //		const UINT bufSize;
 
 		if(parse.ParseNMEASentence( name, name, 1024 ))
 		{
-			cout << "res: " << name << endl;
-			parse.PrintGpsInfo();
+                    string line = parse.PrintByPlt();
+                    if(!line.empty())
+                    {
+                        plt.write(parse.PrintByPlt());
+//                        parse.PrintGpsInfo();
+                        cout << parse.PrintStatus();
+//                        outfile << parse.PrintByPlt() << endl;
+                    }
 		}
 	}
 
 	infile.close();
+	outfile.close();
 
 //	parse.Parse( buffer, result );
 
 //	fclose (pFile);
 //	free (buffer);
+
+	cout << "Press Enter";
+	char enter[256];
+	  cin.getline (enter,256);
 
 	return 0;
 }

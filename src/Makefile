@@ -8,14 +8,14 @@ CFLAGS=-MMD -D_FILE_OFFSET_BITS=64 -DMT -DLB_MODULE_NAME=\"$(EXECUTABLE)\" -DWIT
 #for NetBeans debug
 #-O0 -g3
 
-LDFLAGS=/usr/lib/libboost_thread-mt.a /usr/lib/gcc/i486-linux-gnu/4.4.3/libstdc++.a  -lm -lpthread -lrt
-
+LDFLAGS=/usr/lib/libboost_thread-mt.a  -lm -lpthread -lrt
+#/usr/lib/gcc/i486-linux-gnu/4.4.3/libstdc++.a
 CC=g++
 FOUT=-o
 LINK=$(CC) -o $(EXECUTABLE)
 STRIP=strip $(EXECUTABLE)
 BUILD_DIR=build
-DEPS=$(BUILD_DIR)/GPSInfo.o $(BUILD_DIR)/NMEAParser.o $(BUILD_DIR)/NMEAReader.o
+DEPS=$(BUILD_DIR)/GPSInfo.o $(BUILD_DIR)/NMEAParser.o $(BUILD_DIR)/NMEAReader.o $(BUILD_DIR)/CFile.o
 VPATH=#../../Lblib:../../xmlapi:../api
 
 ##### OS detect

@@ -8,13 +8,15 @@
 #include "targetver.h"
 //#include <windows.h>
 #include <stdio.h>
-#include <linux/types.h>
+//#include <linux/types.h>
 #include <iostream>
 #include <stdio.h>
 
 // for linux
 #include <string.h>
 #include <stdlib.h>
+
+#include <boost/lexical_cast.hpp>
 
 //#include <tchar.h>
 using namespace std;

@@ -171,19 +171,19 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\GPSInfo.cpp"
+				RelativePath=".\src\GPSInfo.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\NMEAParser.cpp"
+				RelativePath=".\src\NMEAParser.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\NMEAReader.cpp"
+				RelativePath=".\src\NMEAReader.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\stdafx.cpp"
+				RelativePath=".\src\stdafx.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -209,19 +209,19 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\GPSInfo.h"
+				RelativePath=".\src\GPSInfo.h"
 				>
 			</File>
 			<File
-				RelativePath=".\NMEAParser.h"
+				RelativePath=".\src\NMEAParser.h"
 				>
 			</File>
 			<File
-				RelativePath=".\stdafx.h"
+				RelativePath=".\src\stdafx.h"
 				>
 			</File>
 			<File
-				RelativePath=".\targetver.h"
+				RelativePath=".\src\targetver.h"
 				>
 			</File>
 		</Filter>
