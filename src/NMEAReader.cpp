@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 //int _tmain(int argc, _TCHAR* argv[])
 {
     const char* inFileName;
-	NMEAParser parse;
+	NMEAParser parse("out2.plt");
 /*
 	FILE * pFile;
 	long lSize;
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 	ifstream infile;
 	string line;
 
-	char name[256];
+	char line[256];
 
             switch ( argc )
     {
@@ -67,34 +67,30 @@ int main(int argc, char *argv[])
             cout << "Error opening file: " << inFileName << endl;
             return 3;
         }
-
-	ofstream outfile ("new.plt",ofstream::out);
-        string outFile = "out2.plt";
-        CPLTFile plt(outFile);
-        plt.createHeader();
-
+//	ofstream outfile ("new.plt",ofstream::out);
 	while (infile.good())
 	{
-		infile.getline( name, 256 );
+		infile.getline( line, 256 );
 //		cout << ":" << name << endl;
 //		char buf2[1024];
 //		const UINT bufSize;
 
-		if(parse.ParseNMEASentence( name, name, 1024 ))
+		if(parse.ParseNMEASentence( line, line, 1024 ))
 		{
-                    string line = parse.PrintByPlt();
-                    if(!line.empty())
-                    {
-                        plt.write(parse.PrintByPlt());
+//                    string line = parse.PrintByPlt();
+//                    if(!line.empty())
+//                    {
+//                        if( parse.get)
+//                        plt.write(parse.PrintByPlt());
 //                        parse.PrintGpsInfo();
-                        cout << parse.PrintStatus();
+                        cout << parse.PrintStatus() << endl;
 //                        outfile << parse.PrintByPlt() << endl;
-                    }
+//                    }
 		}
 	}
 
 	infile.close();
-	outfile.close();
+//	outfile.close();
 
 //	parse.Parse( buffer, result );
 

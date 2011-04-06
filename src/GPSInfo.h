@@ -32,7 +32,7 @@ public:
 	UINT signalQuality;
 	string satelitesInUse;
 	string groundSpeed;
-	string courseOverGround;
+
 	int quality;
 	string heightGeoid;
 	string hdop;
@@ -44,15 +44,17 @@ public:
 	virtual ~GPSInfo();
         void setLatitude(double data);
         void setLongitude(double data);
+        void setCource(string data);
         
         string getLatitude();
         string getLongitude();
-        string getQuality();
+        bool getQuality( string & aOut );
+        string getCourse();
                 
 private:
 	string latitude;
 	string longitude;
-    
+	string courseOverGround;    
 };
 
 #endif // !defined(AFX_GPSINFO_H__2040A232_786E_4C7B_8EA5_0A9438ED6C1F__INCLUDED_)
