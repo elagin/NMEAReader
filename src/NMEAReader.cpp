@@ -2,14 +2,29 @@
 //
 
 #include "stdafx.h"
+
 #include "NMEAParser.h"
 #include "CFile.h"
+#include "Com.h"
 #include <iostream>
 #include <fstream>
 
 
-
 //LPCTSTR = const char* or const wchar_t* depending on _UNICODE
+
+/*
+void thread_proc();
+
+void thread_proc()
+{
+	cout << "thread_proc" << endl;
+}
+
+int fromFile()
+{
+	return 1;
+}
+*/
 int main(int argc, char *argv[])
 //int _tmain(int argc, _TCHAR* argv[])
 {
@@ -45,10 +60,9 @@ int main(int argc, char *argv[])
 
 	ifstream infile;
 	string line;
+//	char name[256];
 
-	char name[256];
-
-            switch ( argc )
+	switch ( argc )
     {
         case 0:
         case 1:
@@ -59,47 +73,66 @@ int main(int argc, char *argv[])
             inFileName = argv[1];
         break;
     }
-
-//	infile.open ("d:\\Projects\\GPS\\NMEAReader\\Debug\\test.txt", ifstream::in);
+/*
 	infile.open (inFileName, ifstream::in);
-        if(!infile.good())
-        {
-            cout << "Error opening file: " << inFileName << endl;
-            return 3;
-        }
-
-	ofstream outfile ("new.plt",ofstream::out);
-        string outFile = "out2.plt";
-        CPLTFile plt(outFile);
-        plt.createHeader();
-
+    if(!infile.good())
+    {
+        cout << "Error opening file: " << inFileName << endl;
+        return 3;
+    }
+*/
+	ofstream outfile ("out.txt",ofstream::out);
+    string outFileName = "out.plt";
+    CPLTFile plt(outFileName);
+    plt.createHeader();
+	{
+		Com com;
+		com.go();
+		com.openPort();
+		int i = 0;
+		while( i < 10)
+		{
+			string res;
+			res = com.getData();
+//			cout << res << endl;
+			if( res.length() > 0)
+			{
+				if(parse.ParseNMEASentence( res, res.c_str(), 512 ))
+				{
+					cout << parse.PrintStatus();
+				}
+				i++;
+			}
+		};
+		com.stop();
+		com.closePort();
+	}
+/*
 	while (infile.good())
 	{
 		infile.getline( name, 256 );
-//		cout << ":" << name << endl;
-//		char buf2[1024];
-//		const UINT bufSize;
-
 		if(parse.ParseNMEASentence( name, name, 1024 ))
 		{
-                    string line = parse.PrintByPlt();
-                    if(!line.empty())
-                    {
-                        plt.write(parse.PrintByPlt());
-//                        parse.PrintGpsInfo();
-                        cout << parse.PrintStatus();
-//                        outfile << parse.PrintByPlt() << endl;
-                    }
+            string line = parse.PrintByPlt();
+            if(!line.empty())
+            {
+                plt.write(parse.PrintByPlt());
+                cout << parse.PrintStatus();
+            }
 		}
 	}
+*/
+//    boost::thread thread(&thread_proc);
+//	thread.create_thread(&thread_proc);
+//	thread.join();
+
+
+//	string comRes = com.work();
+//	cout << comRes;
+//	outfile << comRes;
 
 	infile.close();
 	outfile.close();
-
-//	parse.Parse( buffer, result );
-
-//	fclose (pFile);
-//	free (buffer);
 
 	cout << "Press Enter";
 	char enter[256];

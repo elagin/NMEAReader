@@ -17,6 +17,7 @@
 #include <stdlib.h>
 
 #include <boost/lexical_cast.hpp>
+//#include <boost/thread/thread.hpp>
 
 //#include <tchar.h>
 using namespace std;
