@@ -9,27 +9,11 @@
 #include <iostream>
 #include <fstream>
 
-
-//LPCTSTR = const char* or const wchar_t* depending on _UNICODE
-
-/*
-void thread_proc();
-
-void thread_proc()
-{
-	cout << "thread_proc" << endl;
-}
-
-int fromFile()
-{
-	return 1;
-}
-*/
 int main(int argc, char *argv[])
 //int _tmain(int argc, _TCHAR* argv[])
 {
     const char* inFileName;
-	NMEAParser parse;
+	NMEAParser parse("out2.plt");
 /*
 	FILE * pFile;
 	long lSize;
@@ -119,6 +103,30 @@ int main(int argc, char *argv[])
                 plt.write(parse.PrintByPlt());
                 cout << parse.PrintStatus();
             }
+        if(!infile.good())
+        {
+            cout << "Error opening file: " << inFileName << endl;
+            return 3;
+        }
+//	ofstream outfile ("new.plt",ofstream::out);
+	while (infile.good())
+	{
+		infile.getline( line, 256 );
+//		cout << ":" << name << endl;
+//		char buf2[1024];
+//		const UINT bufSize;
+
+		if(parse.ParseNMEASentence( line, line, 1024 ))
+		{
+//                    string line = parse.PrintByPlt();
+//                    if(!line.empty())
+//                    {
+//                        if( parse.get)
+//                        plt.write(parse.PrintByPlt());
+//                        parse.PrintGpsInfo();
+                        cout << parse.PrintStatus() << endl;
+//                        outfile << parse.PrintByPlt() << endl;
+//                    }
 		}
 	}
 */
@@ -126,7 +134,8 @@ int main(int argc, char *argv[])
 //	thread.create_thread(&thread_proc);
 //	thread.join();
 
-
+	infile.close();
+//	outfile.close();
 //	string comRes = com.work();
 //	cout << comRes;
 //	outfile << comRes;

@@ -4,6 +4,7 @@
 
 #include "stdafx.h"
 #include "NMEAParser.h"
+#include "CFile.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -21,17 +22,30 @@ using boost::bad_lexical_cast;
 
 NMEAParser::NMEAParser()
 {
-//  m_logging = false;
+    _pPltFile = NULL;
 }
 
-NMEAParser::NMEAParser(string outputFileName)
+NMEAParser::NMEAParser(string outputFileName): _pPltFile(NULL)
 {
-//  m_logging = true;
 //  m_outputFile.Open(outputFileName/*, CFile::modeCreate | CFile::modeWrite */);
+    outputFileName = "out2.plt";
+/* 
+	_pPltFile = new CPLTFile(outputFileName);
+    if(_pPltFile!=NULL)
+    {
+        _pPltFile->createHeader();
+    }
+*/
+    //    CPLTFile plt(outputFileName);
+//    plt.createHeader();
 }
 
 NMEAParser::~NMEAParser()
 {
+    if(_pPltFile!=NULL)
+    {
+        delete _pPltFile;
+    }
 //	if(m_logging)
 //		m_outputFile.Close();
 }
@@ -239,6 +253,7 @@ bool NMEAParser::ParseNMEASentence(const string addressField, const char *buf, c
 	{
 		ProcessGPZDA(buf, bufSize);
 	}*/
+    PrintByPlt();
     return res;
 }
 
@@ -506,7 +521,9 @@ bool NMEAParser::ProcessGPRMC( const char *buf, const UINT bufSize )
 		return false;
 	if((p2 = strchr(p1, ',')) == NULL)
 		return false;
-	m_GPSInfo.courseOverGround.assign(p1, p2 - p1);
+        string cource;
+//        cource.assign(p1, p2 - p1);
+	m_GPSInfo.setCource(cource.assign(p1, p2 - p1));
 //	strncpy(auxBuf, p1, p2 - p1);
 //	auxBuf[p2 - p1] = '\0';
 	p1 = p2 + 1;
@@ -634,15 +651,11 @@ bool NMEAParser::getLat(const char *p1, const char *buf, const UINT bufSize, dou
 	return true;
 }
 
-void NMEAParser::PrintByPlt(ofstream & outfile)
+bool NMEAParser::PrintByPlt()
 {
-//	outfile << "aa";
-}
-
-string NMEAParser::PrintByPlt()
-{
-	string out;
-
+    string out;
+    if(_pPltFile!=NULL)
+    {
         if(!m_GPSInfo.getLatitude().empty()
             && !m_GPSInfo.getLongitude().empty())
         {
@@ -653,8 +666,11 @@ string NMEAParser::PrintByPlt()
             out.append(",");
             out.append("28-may-10,");
             out.append(m_GPSInfo.time.getTime());
+            _pPltFile->write(out);
         }
-	return out;
+
+    }
+    return true;
 }
 
 void NMEAParser::PrintGpsInfo()
@@ -675,12 +691,20 @@ string NMEAParser::PrintStatus()
     if(m_GPSInfo.quality != 0)
     {
  	out = "Lat: " + m_GPSInfo.getLatitude()
-            + "Lon: " + m_GPSInfo.getLongitude()
-                ;
+            + " | Lon: " + m_GPSInfo.getLongitude()
+            + " | Speed: " + m_GPSInfo.groundSpeed
+            + " | Course: " + m_GPSInfo.getCourse()
+            + " | Altitude: " + m_GPSInfo.altitude;
     }
     else
     {
         out = "No data";
     }
     return out;
+}
+
+bool NMEAParser::getQuality()
+{
+    string out;
+    return m_GPSInfo.getQuality(out);
 }

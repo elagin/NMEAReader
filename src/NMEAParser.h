@@ -7,6 +7,7 @@
 
 #include "stdafx.h"
 #include "GPSInfo.h"	// Added by ClassView
+#include "CFile.h"
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
@@ -23,10 +24,9 @@ public:
 	bool ParseNMEASentence(const string addressField, const char *buf, const UINT bufSize);
 
         void PrintGpsInfo();
-	void PrintByPlt(ofstream & outfile);
-	void PrintByPlt(string & out);
-        string PrintByPlt();
+        bool PrintByPlt();
         string PrintStatus();
+        bool getQuality();
 
 	bool getTime(const char *p1, const char *buf, const UINT bufSize, gpsTime & time, int & size);
 	bool getLat(const char *p1, const char *buf, const UINT bufSize, double & lat, int & size, const bool isLat);
@@ -42,8 +42,8 @@ private:
 	bool ProcessGPRMC(const char *buf, const UINT bufSize);
 	void ProcessGPZDA(const char *buf, const UINT bufSize);
 
-	bool m_logging;
 	GPSInfo m_GPSInfo;
+        CPLTFile * _pPltFile;
 };
 
 #endif // !defined(AFX_NMEAPARSER_H__26C0F55B_19A8_4E71_A1BA_A2EBA169FCEB__INCLUDED_)

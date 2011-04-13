@@ -32,19 +32,30 @@ void GPSInfo::setLongitude(double data)
     longitude.resize(10);
 }
 
+void GPSInfo::setCource(string data)
+{
+    courseOverGround = data;
+    courseOverGround.resize(3);
+}
+
 string GPSInfo::getLatitude(){return latitude;}
 string GPSInfo::getLongitude(){return longitude;}
-string GPSInfo::getQuality()
+string GPSInfo::getCourse(){return courseOverGround;}
+
+bool GPSInfo::getQuality( string & aOut )
 {
     if(quality == 0)
     {
-        return "Invalid";
+        aOut = "Invalid";
+        return false;
     }
     else
     {
-        return "GPS fix";
+        aOut = "GPS fix";
+        return true;
     }
 }
+
 
 
 void gpsTime::setTime(string aHour, string aMin, string aSec)
