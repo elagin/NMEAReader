@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 		com.go();
 		com.openPort();
 		int i = 0;
-		while( i < 10)
+		while( i < 30)
 		{
 			string res;
 			res = com.getData();

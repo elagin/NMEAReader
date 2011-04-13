@@ -259,7 +259,7 @@ bool NMEAParser::ParseNMEASentence(const string addressField, const char *buf, c
 
 GPSInfo& NMEAParser::GetActualGPSInfo()
 {
-  return m_GPSInfo;
+	return m_GPSInfo;
 }
 
 

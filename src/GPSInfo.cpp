@@ -19,7 +19,9 @@ using boost::bad_lexical_cast;
 //////////////////////////////////////////////////////////////////////
 
 GPSInfo::GPSInfo(){}
+
 GPSInfo::~GPSInfo(){};
+
 void GPSInfo::setLatitude(double data)
 {
     latitude=lexical_cast<string>(data);

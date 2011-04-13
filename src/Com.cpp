@@ -5,7 +5,8 @@ using boost::lexical_cast;
 using boost::bad_lexical_cast;
 
 Com::Com(): _stoprequested(false),
-			_portHandle(NULL)
+			_portHandle(NULL),
+			_bufferPos(0)
 {
 }
 
@@ -96,7 +97,13 @@ void Com::go()
 
 std::string Com::getData()
 {
-	boost::mutex::scoped_lock l(_mutex); //Note 2
+	boost::mutex::scoped_lock l(_mutex);
+	return _result;
+}
+
+std::string Com::getLine()
+{
+	boost::mutex::scoped_lock l(_mutex);
 	return _result;
 }
 
@@ -104,13 +111,28 @@ std::string Com::readData()
 {
 	std::string res;
 	DWORD bytes_read = 0;    // Number of bytes read from port
+	const int buffSize = 500;
+	char tmpBuffer[buffSize];
+	memset(&tmpBuffer, 0, buffSize);
 
-	_bStatus = ReadFile(_portHandle, &_buffer, 500, &bytes_read, NULL);
-	if (_bStatus != 0)
+	_bStatus = ReadFile(_portHandle, &tmpBuffer, 500, &bytes_read, NULL);
+	if( _bStatus != 0 )
 	{
 		// error processing code goes here
 	}
-	res.assign(_buffer, bytes_read);
+
+	_buffer.insert(_bufferPos, tmpBuffer, bytes_read);
+	_bufferPos += bytes_read;
+
+//	res.assign(_buffer, bytes_read);
+
+	int startPos = res.find("$");
+	int endPos = res.find("\r");
+	if( startPos!= -1 && endPos != -1 )
+	{
+		_line.assign(res, startPos, endPos - startPos);
+	}
+	cout << "Line: " << _line << endl;
 	return res;
 }
 

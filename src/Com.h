@@ -4,6 +4,8 @@
 #include <Windows.h>
 #include <vector>
 
+#include "GPSInfo.h"
+
 class Com
 {
 public:
@@ -15,6 +17,7 @@ public:
 	void go();
 	void stop();
 	string getData();
+	string getLine();
 
 private:
 	void do_work();
@@ -25,7 +28,9 @@ private:
 	boost::mutex _mutex;
 
 	string	_result;
+	string	_line;
 	HANDLE	_portHandle;  // Handle COM port
-	char	_buffer[500];
+	string	_buffer;
+	size_t	_bufferPos;
 	int		_bStatus;
 };
