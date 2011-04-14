@@ -4,9 +4,14 @@
 using boost::lexical_cast;
 using boost::bad_lexical_cast;
 
+#include <iostream>
+#include <fstream>
+
 Com::Com(): _stoprequested(false),
 			_portHandle(NULL),
-			_bufferPos(0)
+			_bufferPos(0),
+			_startPos(0),
+			_endPos(0)
 {
 }
 
@@ -109,6 +114,9 @@ std::string Com::getLine()
 
 std::string Com::readData()
 {
+	ofstream out_raw ("nmea_raw.txt",ofstream::out|ofstream::app);
+	ofstream out_line ("line.txt",ofstream::out|ofstream::app);
+
 	std::string res;
 	DWORD bytes_read = 0;    // Number of bytes read from port
 	const int buffSize = 500;
@@ -120,18 +128,22 @@ std::string Com::readData()
 	{
 		// error processing code goes here
 	}
+	out_raw << tmpBuffer;
 
 	_buffer.insert(_bufferPos, tmpBuffer, bytes_read);
 	_bufferPos += bytes_read;
 
-//	res.assign(_buffer, bytes_read);
-
-	int startPos = res.find("$");
-	int endPos = res.find("\r");
-	if( startPos!= -1 && endPos != -1 )
+	_startPos = _buffer.find("$");
+	_endPos = _buffer.find("\r", _startPos);
+	if( _startPos!= -1 && _endPos != -1 )
 	{
-		_line.assign(res, startPos, endPos - startPos);
+		_line.assign(_buffer, _startPos, _endPos - _startPos);
+		out_line << _line << endl;
+		_buffer.erase(0, _startPos);
+		_bufferPos = 0;
 	}
+	out_raw.close();
+	out_line.close();
 	cout << "Line: " << _line << endl;
 	return res;
 }
@@ -142,7 +154,7 @@ void Com::do_work()
 	{
 		std::string value = readData();
 		boost::mutex::scoped_lock l(_mutex);
-		::Sleep(1000);
+		//::Sleep(1000);
 		_result.assign(value);
 	}
 

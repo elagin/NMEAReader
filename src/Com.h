@@ -33,4 +33,6 @@ private:
 	string	_buffer;
 	size_t	_bufferPos;
 	int		_bStatus;
+	int		_startPos;
+	int		_endPos;
 };
